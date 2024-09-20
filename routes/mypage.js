@@ -9,7 +9,6 @@ const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const { Token } = require('aws-sdk');
 
-
 // 복호화 함수
 function decode_user_no(authHeader) {
     const token = authHeader.split(' ')[1];

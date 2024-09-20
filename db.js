@@ -1,3 +1,6 @@
+// 이거 없으면 실행 오류남
+require('dotenv').config();
+
 var mysql = require("mysql2");
 
 const db = mysql.createConnection({
