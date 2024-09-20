@@ -4,7 +4,6 @@ var db = require('../db.js');
 var sql = require('../sql.js');
 const fs = require('fs');
 const path = require("path");
-const bcrypt = require('bcrypt');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
