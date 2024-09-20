@@ -156,16 +156,20 @@ WHERE
     get_history:`SELECT chat_no, chat_content as message, chat_sender as author, chat_read, chat_img as images, chat_time as time, chat_msg_status as status
   FROM tb_chat_msg
   WHERE chat_no = ?`,
-    update_status_1:`UPDATE tb_chat SET Chat_status=1 WHERE (chat_no=? AND user_no_1=?)`,
-    update_status_2:`UPDATE tb_chat SET Chat_status=2 WHERE (chat_no=? AND user_no_2=?)`,
-    status_check:`SELECT Chat_status, User_no_1 FROM tb_chat WHERE Chat_no=?`,
+    update_status_1:`UPDATE tb_chat SET Chat_status=1, last_leave_no=1 WHERE (chat_no=? AND user_no_1=?)`,
+    update_status_2:`UPDATE tb_chat SET Chat_status=2, last_leave_no=2 WHERE (chat_no=? AND user_no_2=?)`,
+    //update_status_3:`UPDATE tb_chat SET Chat_status=-1 WHERE chat_no=?`,
+    status_check:`SELECT last_leave_no, user_no_1 FROM tb_chat WHERE Chat_no = ?`,
     chat_delete_room:`DELETE FROM tb_chat WHERE chat_no = ?`,
-    update_msg_status_1:`UPDATE tb_chat_msg SET chat_msg_status = 1 WHERE (chat_no = ? AND chat_sender = ?)
-    `,
-    update_msg_status_2:`UPDATE tb_chat_msg SET chat_msg_status = 2 WHERE (chat_no = ? AND chat_sender = ?)
-    `,
-    get_msg_status:`SELECT chat_msg_status FROM tb_chat_msg WHERE chat_sender = ?`,
-    update_msg_status_neg1 : `UPDATE tb_chat_msg SET chat_msg_status = -1 WHERE chat_no = ?`,
+    update_msg_status_1_neg:`UPDATE tb_chat_msg SET chat_msg_status = -1 WHERE chat_no = ? AND chat_msg_status = 1`,
+    update_msg_status_2_neg:`UPDATE tb_chat_msg SET chat_msg_status = -1 WHERE chat_no = ? AND chat_msg_status = 2`,
+    //update_msg_status_3:`UPDATE tb_chat_msg SET chat_msg_status = -1 WHERE chat_no = ?`,
+    //get_msg_status:`SELECT chat_msg_status FROM tb_chat_msg WHERE chat_no = ?`,
+    check_all_status: `SELECT chat_msg_status FROM tb_chat_msg WHERE chat_no = ?`,
+    update_msg_status_0_1: `UPDATE tb_chat_msg SET chat_msg_status = 1 WHERE chat_no = ? AND chat_msg_status = 0`,
+    update_msg_status_0_2: `UPDATE tb_chat_msg SET chat_msg_status = 2 WHERE chat_no = ? AND chat_msg_status = 0`,
+    update_last_update_no: 'UPDATE tb_chat SET last_leave_no = ? WHERE chat_no = ?',
+    //update_system_msg: `UPDATE tb_chat_msg SET chat_msg_status = ? WHERE chat_no = ? AND chat_sender = 0`,
 
 
     // mypage 마이페이지 6/13

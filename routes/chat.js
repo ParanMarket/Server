@@ -161,7 +161,6 @@ router.get('/get_chat_history/:chatNo', (req, res) => {
         }
         const user_no_1 = userNo1[0].user_no_1 // user_no_1 가져오기
 
-
         let query = '';
 
         if (user_no === user_no_1) {
@@ -217,7 +216,7 @@ router.post('/leaveChatRoom', (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
+        return res.status(401).json({ message: '토큰이 제공되지 않았습니다.' });
     }
 
     let user_no;
@@ -225,132 +224,128 @@ router.post('/leaveChatRoom', (req, res) => {
         const decoded = jwt.verify(token, 'secret_key');
         user_no = decoded.no;
     } catch (err) {
-        return res.status(401).json({ message: 'Invalid user token' });
+        return res.status(401).json({ message: '유효하지 않은 사용자 토큰입니다.' });
     }
 
     db.query(sql.status_check, [chatNo], (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: 'error1' });
-        }
+        if (err) return res.status(500).json({ error: 'Error checking chat status' });
 
-        const chatStatus = results[0].Chat_status;
-        console.log('10: '+results[0].Chat_status)
+        const last_leave_no = results[0].last_leave_no // 마지막으로 나간 사람 저장
+        const user_no_1 = results[0].user_no_1;
+        console.log('채팅 상태 정보 출력:', last_leave_no, user_no_1)
 
-        if (chatStatus == 0) {
-
-            db.query(sql.update_status_1, [chatNo, user_no], (err) => {
-                if (err) {
-                    return res.status(500).json({ error: 'error2' });
-                }
-
-                db.query(sql.update_msg_status_1, [chatNo, user_no], (err) => {
-                    if (err) {
-                        return res.status(500).json({ error: 'error7' });
-                    }
-
-                    db.query(sql.update_status_2, [chatNo, user_no], (err) => {
-                        if (err) {
-                            return res.status(500).json({ error: 'error3' });
-                        }
-
-                        db.query(sql.status_check, [chatNo], (err, results) => {
-                            if (err) {
-                                return res.status(500).json({ error: 'error5' });
-                            }
-
-                            const chatStatus2 = results[0].Chat_status;
-                            console.log('20: '+results[0].Chat_status)
-
-                            if (chatStatus2 == 2) {
-                                db.query(sql.update_msg_status_2, [chatNo, user_no], (err) => {
-                                    if (err) {
-                                        return res.status(500).json({ error: 'error8' });
-                                    }
-
-                                    db.query(sql.get_msg_status, [user_no], (err, results) => {
-                                        if (err) {
-                                            return res.status(500).json({ error: 'error9' });
-                                        }
-                                        const msg_status = results[0].chat_msg_status
-                                        console.log('30: '+msg_status)
-
-                                        res.status(200).json({ message: 'success', chat_msg_status: msg_status });
-                                    });
-                                });
-                            } else {
-                                db.query(sql.get_msg_status, [user_no], (err, results) => {
-                                    if (err) {
-                                        return res.status(500).json({ error: 'error9' });
-                                    }
-                                    const msg_status = results[0].chat_msg_status
-                                    console.log('30-2: '+msg_status)
-
-                                    res.status(200).json({ message: 'success', chat_msg_status: msg_status });
-                                });
-                            }
-                        })
-                    })
-                })
-            });
-
-        } else if (chatStatus == 1 || chatStatus == 2) {
-            const newStatus = chatStatus == 1 ? 2 : 1;
-
-            db.query(sql[`update_status_${newStatus}`], [chatNo, user_no], (err) => {
-                if (err) {
-                    return res.status(500).json({ error: 'error4' });
-                }
-
-                db.query(sql.status_check, [chatNo], (err, results) => {
-                    if (err) {
-                        return res.status(500).json({ error: 'error5' });
-                    }
-
-                    if (results.length === 0) {
-                        return res.status(404).json({ error: 'Chat status not found' });
-                    }
-
-                    const updatedStatus = results[0].Chat_status;
-                    console.log('40: ' + updatedStatus);
-
-                    db.query(updatedStatus == 1 ? sql.update_msg_status_1 : sql.update_msg_status_2, [chatNo, user_no], (err) => {
-                        if (err) {
-                            return res.status(500).json({ error: 'error7' });
-                        }
-
-                        db.query(sql.get_msg_status, [user_no], (err, results) => {
-                            if (err) {
-                                return res.status(500).json({ error: 'error9' });
-                            }
-
-                            if (results.length === 0) {
-                                return res.status(404).json({ error: 'Message status not found' });
-                            }
-
-                            const msg_status = results[0].chat_msg_status;
-                            console.log('50: ' + msg_status);
-
-                            if ((chatStatus == 1 && updatedStatus == 2) || (chatStatus == 2 && updatedStatus == 1)) {
-                                db.query(sql.chat_delete_room, [chatNo], (err) => {
-                                    if (err) {
-                                        return res.status(500).json({ error: 'error6' });
-                                    }
-
-                                    res.status(200).json({ message: 'success', chat_msg_status: msg_status });
-                                });
-                            } else {
-                                // 상태가 업데이트 되었으나 삭제되지 않은 경우 -> 오류 확인용 없어도 됨
-                                res.status(200).json({ message: 'updated, but not deleted', chat_msg_status: msg_status });
-                            }
-                        });
+        if (last_leave_no == 0) {
+                // 두 사용자가 모두 있는 경우, 현재 사용자를 나간 것으로 표시
+                if (user_no_1 == user_no) { // user_no_1 나감
+                // tb_chat테이블 stastus 1로 변경
+                db.query(sql.update_status_1, [chatNo, user_no], (err) => {
+                    if (err) return res.status(500).json({ error: 'Error updating user 1 status' });
+                    console.log('user_no_1 나감 0')
+                    // chat_msg_status = 0 인거 1로 변경
+                    db.query(sql.update_msg_status_0_1, [chatNo], (err) => {
+                        if (err) return res.status(500).json({ error: 'Error updating message status to 1' });
+                        console.log('user_no_1 msg status 변경 0->1')
+                        return res.status(200).json({ message: 'user_no_1 has left the chat', chat_msg_status: 1 });
                     });
                 });
-            });
-        } else {
-            res.status(500).json({ error: 'error' });
+            } else { // user_no_2 나감
+                // tb_chat테이블 stastus 2로 변경
+                db.query(sql.update_status_2, [chatNo, user_no], (err) => {
+                    if (err) return res.status(500).json({ error: 'Error updating user 2 status' });
+                    console.log('user_no_2 나감 0')
+                    // chat_msg_status=0 인거 2로 변경
+                    db.query(sql.update_msg_status_0_2, [chatNo], (err) => {
+                        if (err) return res.status(500).json({ error: 'Error updating message status to 2' });
+                        console.log('user_no_1 msg status 변경 0->2')
+                        return res.status(200).json({ message: 'user_no_2 has left the chat', chat_msg_status: 2 });
+                    });
+                });
+            }
         }
-    })
+
+        if (last_leave_no == 1) { // user_no_1이 이미 나간 상태
+            if (user_no_1 == user_no) { //user_no_1가 나가는 경우
+                db.query(sql.update_msg_status_0_1, [chatNo], (err) => {
+                    if (err) return res.status(500).json({ error: 'Error updating user 1 status' });
+                    console.log('1 나간 상태에서 msg상태변경 0->1');
+                    db.query(sql.update_status_1, [chatNo, user_no], (err) => {
+                        if (err) return res.status(500).json({ error: 'Error updating user 1 status' });
+                        console.log('1 나간 상태에서 status 0->1');
+                    })
+                    return res.status(200).json({ message: 'user_no_1 has left the chat', chat_msg_status: 1 });
+                });
+            } else { //user_no_2가 나가는 경우
+                // tb_chat테이블 stastus 2로 변경
+                db.query(sql.update_status_2, [chatNo, user_no], (err) => {
+                    if (err) return res.status(500).json({ error: 'Error updating user 1 status' });
+                    console.log('status 상태변경 1->2');
+                    // chat_msg_status=1인거 -1로 변경
+                    db.query(sql.update_msg_status_1_neg, [chatNo], (err) => {
+                        if (err) return res.status(500).json({ error: 'Error updating message status to -1' });
+                        console.log('msg 상태변경 1->-1');
+                        db.query(sql.update_msg_status_0_2, [chatNo], (err) => {
+                            if (err) return res.status(500).json({ error: 'Error updating message status to 2' });
+                            console.log('msg 상태변경 0-> 2');
+                            return checkAndDeleteIfNecessary(chatNo, res);
+                        })
+                    });
+                });
+            }
+        }
+
+        if (last_leave_no == 2) { // user_no_2이 이미 나간 상태
+            if (user_no_1 == user_no) { //user_no_1가 나가는 경우
+                // tb_chat테이블 stastus 1로 변경
+                db.query(sql.update_status_1, [chatNo, user_no], (err) => {
+                    if (err) return res.status(500).json({ error: 'Error updating user 1 status' });
+                    console.log('status 상태변경 2->1');
+                    // chat_msg_status=2인거 -1로 변경
+                    db.query(sql.update_msg_status_2_neg, [chatNo], (err) => {
+                        if (err) return res.status(500).json({ error: 'Error updating message status to -1' });
+                        console.log('msg 상태변경 2->-1');
+                        db.query(sql.update_msg_status_0_1, [chatNo], (err) => {
+                            if (err) return res.status(500).json({ error: 'Error updating message status to 1' });
+                            console.log('msg 상태변경 0-> 1');
+                            return checkAndDeleteIfNecessary(chatNo, res);
+                        })
+                    });
+                });
+            } else { // user_no_2 나감
+                db.query(sql.update_msg_status_0_2, [chatNo], (err) => {
+                    if (err) return res.status(500).json({ error: 'Error updating message status to 2' });
+                    console.log('msg 상태변경 0->2');
+                    db.query(sql.update_status_2, [chatNo, user_no],  (err) => {
+                        if (err) return res.status(500).json({ error: 'Error updating user 1 status' });
+                        console.log('2 나간 상태에서 status 0->2');
+                    })
+                    return res.status(200).json({ message: 'user_no_1 has left the chat', chat_msg_status: 1 });
+                });
+            }
+        }
+
+    });
+
 });
 
+// 모든 메시지 상태가 -1인지 확인 후 채팅방 삭제 함수
+function checkAndDeleteIfNecessary(chatNo, res) {
+    db.query(sql.check_all_status, [chatNo], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Error checking all message statuses' });
+
+        const allStatus = results.map(row => row.chat_msg_status);
+
+        if (allStatus.every(status => status === -1)) {
+            db.query(sql.chat_delete_room, [chatNo], (err) => {
+                if (err) return res.status(500).json({ error: 'Error deleting chat room' });
+
+                return res.status(200).json({ message: 'Chat room deleted successfully' });
+            });
+        } else {
+// 이미 응답을 보냈다면 더 이상 응답을 보내지 않음
+            if (!res.headersSent) {
+                return res.status(200).json({ message: 'Chat room updated, but not deleted.', chat_msg_status: allStatus });
+            }        }
+    });
+}
 
 module.exports = router;

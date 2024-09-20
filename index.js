@@ -138,7 +138,56 @@ io.on("connection", (socket) => {
             console.log('jwt 인증 오류: ', error);
         }
     });
-
+    // // 방번호가 같을 때만 받을 수 있음
+    // socket.on("send_message", async (data) => {
+    //
+    //     const decoded = jwt.verify(data.userToken, 'secret_key');
+    //     const user_no = decoded.no
+    //
+    //     //채팅 메세지 저장
+    //     try {
+    //         db.query(sql.user_nick_get, [user_no], function (error, results, fields) {
+    //             const userNick = results[0].user_nick
+    //             db.query(sql.chat_no_get, [user_no, user_no, data.post_no], function (error, results, fields) {
+    //                 const roomNo = results[0].chat_no
+    //                 if (error) {
+    //                     console.log('1: ' + error)
+    //                 }
+    //                 //text 메세지
+    //                 else if (typeof data.message === 'string') {
+    //                     db.query(sql.chat_text, [roomNo, data.message, user_no, '1', userNick], function (error, results, fields) {
+    //                         if (error) {
+    //                             console.log('2: ' + error)
+    //                         }
+    //                         else {
+    //                             console.log("Message saved to DB")
+    //                         }
+    //                     })
+    //
+    //                 }
+    //                 if (data.images && data.images.length > 0) {
+    //                     const imageUrls = JSON.stringify(data.images);
+    //                     console.log("Saving image to DB:", imageUrls);
+    //
+    //                     // JSON 문자열로 변환된 값을 데이터베이스에 저장
+    //                     db.query(sql.chat_img, [roomNo, user_no, '1', imageUrls, userNick], function (error) {
+    //                         if (error) {
+    //                             console.log('이미지 저장 오류:', error);
+    //                         } else {
+    //                             console.log("Img saved to DB.");
+    //                         }
+    //
+    //                     });
+    //                 }
+    //             });
+    //         });
+    //     } catch (error) {
+    //         console.log('jwt 인증 오류: ' + error)
+    //     }
+    //     socket.to(data.chat_no).emit("receive_message", data)
+    // })
+    //
+    //
     socket.on("leave_room", (data) => {
         if (socket.currentRoom) {
             socket.to(socket.currentRoom).emit("user_left", {
