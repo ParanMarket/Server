@@ -41,18 +41,51 @@ router.post('/login', async function(request, response) {
                 console.log('가입된 이메일 -> 바로 로그인 처리');
                 const user = results[0];
                 console.log(user)
+
+                if (user.user_status === 1) {
+                    return response.status(403).json({
+                        message: "자발적으로 탈퇴한 회원입니다."
+                    })
+                }
                 const token = jwt.sign({ no: user.User_no }, 'secret_key');
 
-                if (!user.User_nick) { // 닉네임이 null인 경우
-                    console.log("닉네임 정보 없음")
-                    return response.status(200).send({
-                        userToken: token,
-                        needsNickname: true
+                db.query(sql.check_black, [user.User_no], function (error, blackResults) {
+                    if (error) {
+                        return response.status(500).json({ message: 'DB_error' });
+                    }
 
-                    });
-                }
-                response.status(200).send({ userToken: token, needsNickname: false });
+                    // blackResults를 우선순위에 따라 정렬 (black_status가 큰 값이 우선)
+                    const sortedResults = blackResults.sort((a, b) => b.Black_status - a.Black_status);
 
+                    // 탈퇴 상태가 있는지 확인하고 탈퇴 사유 가져오기
+                    const terminationReport = sortedResults.find((report) => report.Black_status === 3);
+                    if (terminationReport) {
+                        return response.status(403).json({
+                            message: '탈퇴된 회원입니다.',
+                            terminationReason: terminationReport.Black_reason // 탈퇴 사유 추가
+                        });
+                    }
+
+                    // 탈퇴 상태가 없는 경우 가장 최근의 경고 메시지 확인
+                    const warningReports = sortedResults.filter((report) => report.Black_status === 2);
+                    console.log('warningReports:', warningReports); // Black_status === 2인 항목 확인
+
+                    const latestWarning = warningReports.sort((a, b) => new Date(b.Black_sdd) - new Date(a.Black_sdd))[0];
+                    console.log('latestWarning:', latestWarning); // 경고 상태 확인
+
+                    const warningMessage = latestWarning ? latestWarning.Black_reason : null;
+
+                    if (!user.User_nick) { // 닉네임이 null인 경우
+                        console.log("닉네임 정보 없음")
+                        return response.status(200).send({
+                            userToken: token,
+                            needsNickname: true,
+                            warningMessage: warningMessage
+
+                        });
+                    }
+                    response.status(200).send({ userToken: token, needsNickname: false, warningMessage: warningMessage  });
+                })
             } else {
                 console.log('가입 안 된 이메일 -> 회원 등록');
                 db.query(sql.register_email, [payload.email], function (error, results, fields) {

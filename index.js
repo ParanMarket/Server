@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 
-const PORT = process.env.PORT || 5001
+const PORT = process.env.SERVER_PORT || 5001
 
 const app = express()
 app.use(cors({
@@ -25,12 +25,14 @@ const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 const mypageRouter = require('./routes/mypage');
 const chatRouter = require('./routes/chat')
+const managerRouter = require('./routes/manager');
+
 
 app.use('/auth', authRouter);
 app.use('/post', postRouter);
 app.use('/mypage', mypageRouter);
 app.use('/chat', chatRouter)
-
+app.use('/manager', managerRouter);
 //---------------------------------------------------------------------------------------
 
 const server = http.createServer(app)

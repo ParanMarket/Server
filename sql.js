@@ -5,7 +5,7 @@ email_check: `SELECT * FROM tb_user WHERE user_email = ?`,
     nick_check: `SELECT * FROM tb_user WHERE user_nick = ?`,
     register_email: `INSERT INTO tb_user (user_email) VALUES (?)`,
     register_nick: `UPDATE tb_user SET user_nick = ? WHERE user_no = ?`,
-    user_info_get: `SELECT user_nick, user_email, user_sdd, user_img, user_grade FROM tb_user WHERE user_no = ?`,
+    user_info_get: `SELECT user_nick, user_email, user_sdd, user_img, user_grade, user_tp FROM tb_user WHERE user_no = ?`,
 
 
     // 수정해야 함
@@ -204,4 +204,27 @@ WHERE
         GROUP BY ps.post_no) AS post_chat_cnt FROM tb_post ps, tb_post_img img
         WHERE ps.post_no = img.post_no AND img.post_img_main = 1
         AND ps.post_user_no2 = ?`,
+
+
+    // manager 관리자 권한
+    manager_check: `SELECT user_no, user_nick, user_email FROM tb_user WHERE user_tp = 0 AND user_no = ?`,
+
+    report_list_get: `SELECT * FROM tb_black WHERE black_status = 0`,
+    report_process: `UPDATE tb_black SET black_status = ?, Black_reason = ?, admin_no = ? WHERE black_no = ?`,
+    //tb_user에 (강퇴, 경고) 업데이트 :``,
+    user_kick: `UPDATE tb_user SET user_status = CASE WHEN user_status < 2 THEN 2 ELSE user_status END WHERE user_no = ?`,
+    user_warning: `UPDATE tb_user SET user_black = user_black + 1 WHERE user_no = ?`,
+
+    report_post: `SELECT post_no, post_title, post_comment, post_status FROM tb_post WHERE post_no = ?`,
+    //kick_user: `DELETE tb_user WHERE user_no = ?`,
+    // auth에서 로그인 할 때 확인
+    check_black: `SELECT * FROM TB_BLACK WHERE Black_user_no = ? AND admin_no IS NOT NULL`,
+
+
+    user_list_get: `SELECT * FROM tb_user ORDER BY user_no LIMIT ?, ?`,
+    user_search_list_get: `SELECT * FROM tb_user WHERE user_nick LIKE ? ORDER BY user_no`,
+
+    notice_list_get: `SELECT * FROM tb_notice ORDER BY notice_no DESC`,
+    notice_write: `INSERT INTO tb_notice (notice_title, notice_con, user_no) VALUES (?, ?, ?)`,
+    notice_delete: `DELETE FROM tb_notice WHERE notice_no = ?`,
 }
