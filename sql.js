@@ -90,10 +90,16 @@ email_check: `SELECT * FROM tb_user WHERE user_email = ?`,
 
     chat_set: `INSERT INTO tb_chat (Chat_no, Post_no, User_no_1, User_no_2) VALUES(?, ?, ?, ?)`,
     chat_text: `INSERT INTO tb_chat_msg (Chat_no, Chat_content, Chat_sender, Chat_read, Chat_sender_nick) VALUES(?, ?, ?, ?, ?)`,
-    chat_img: `INSERT INTO tb_chat_msg (Chat_no, Chat_content, Chat_sender, Chat_read, Chat_img, Chat_sender_nick) VALUES(?, "", ?, ?, ?,?)`,
+    chat_img: `INSERT INTO tb_chat_msg (Chat_no, Chat_content, Chat_sender, Chat_read, Chat_img, Chat_sender_nick) VALUES(?, ?, ?, ?, ?,?)`,
 
     chat_list: `SELECT * FROM tb_chat WHERE User_no_1 = ? OR User_no_2 = ?`,
     last_chat:  `SELECT * FROM tb_chat_msg WHERE chat_no = ? ORDER BY Chat_time DESC LIMIT 1`,
+    update_read: `UPDATE tb_chat_msg SET Chat_read = 1 WHERE Chat_no = ? AND Chat_read = 0`,
+    get_unread: `SELECT COUNT(*) AS unread_count FROM tb_chat_msg WHERE (Chat_no = ? AND Chat_sender != ?) AND Chat_read = 0`,
+    unread_total: `SELECT COUNT(*) AS unread_total FROM tb_chat_msg WHERE Chat_no IN (
+                   SELECT chat_no 
+                   FROM tb_chat 
+                   WHERE user_no_1 = ? OR user_no_2 = ?) AND Chat_read = 0 AND Chat_sender != ?`,
 
 
     //GROUP BY, JOIN 과정에서 중복발생 -> CTE처리를 통해 세분화 필요

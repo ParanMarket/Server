@@ -188,16 +188,53 @@ router.get('/get_chat_history/:chatNo', (req, res) => {
 //채팅 읽음 설정
 router.post('/updateChatRead', (req, res) => {
     // 데이터베이스에서 메세지의 읽음 상태 업데이트 -> Chat_msg_no, 현재 유저번호 필요
-    const { Chat_msg_no, userNo } = req.body;
-    db.query('UPDATE tb_chat_msg SET chat_read = TRUE WHERE id IN (?) AND user_no != ?', [Chat_msg_no, userNo], (err, results) => {
+    const { chatNo } = req.body;
+
+    const userToken = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(userToken, 'secret_key');
+    const user_no = decoded.no;
+
+    db.query(sql.update_read, [chatNo, user_no], (err, results) => {
             if (err) {
-                console.error('error :', error);
+                console.error('chat_read 상태 error :', error);
                 return res.status(500).send('error');
             }
-            res.send('success');
+        res.status(200).json({ message: 'success' });
         }
     );
 });
+
+// 채팅방 안 읽은 채팅 수 가져오기
+router.get('/unread', (request, response) => {
+    const chat_no = request.query.chat_no
+    const userToken = request.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(userToken, 'secret_key');
+    const user_no = decoded.no;
+
+    db.query(sql.get_unread, [chat_no, user_no], (error, results) => {
+        if (error) {
+            console.error('show_unread 조회 오류 : ', error);
+            return response.status(500).send('error')
+        }
+        response.status(200).json(results[0])
+    })
+})
+
+// 하단바 용 채팅방 안 읽은 채팅 수 가져오기
+router.get('/unread_total', (request, response) => {
+    const userToken = request.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(userToken, 'secret_key');
+    const user_no = decoded.no;
+
+    db.query(sql.unread_total, [user_no, user_no, user_no], (error, results) => {
+        if (error) {
+            console.error('show_unread 조회 오류 : ', error);
+            return response.status(500).send('error')
+        }
+        console.log("Total unread count:", results[0].unread_total);
+        response.status(200).json({ unread_total: results[0].unread_total });
+    })
+})
 
 //채팅방 이미지 업로드
 router.post('/upload_images', uploadImage.array('images', 9), (req, res) => {

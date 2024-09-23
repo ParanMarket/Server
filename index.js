@@ -52,10 +52,22 @@ io.on("connection", (socket) => {
 
     socket.currentRoom = null
 
-    socket.on("join_room", (data) => {
-        socket.join(data)
-        socket.currentRoom = data
-        console.log(`User with Id: ${socket.id} joined room: ${data}`)
+    socket.on("join_room", (chatNo, user_no) => {
+        console.log("조인 룸 데이터 : ", chatNo)
+        console.log(" 조인 룸 사람 : ",user_no)
+        socket.join(chatNo)
+        socket.currentRoom = chatNo
+        console.log(`User with Id: ${socket.id} joined room: ${chatNo}`)
+
+        db.query(sql.get_unread, [chatNo, user_no], (error, results) => {
+            if (error) {
+                console.error("Unread message count error:", error);
+                return;
+            }
+
+            const unreadCount = results[0].unread_count;
+            socket.emit("update_unread", { chat_no: chatNo, unread_count: unreadCount });
+        })
     })
 
     // 방번호가 같을 때만 받을 수 있음
@@ -106,7 +118,7 @@ io.on("connection", (socket) => {
 
                         // 5. 텍스트 메시지 저장
                         if (typeof data.message === 'string' && data.message !== "") {
-                            db.query(sql.chat_text, [roomNo, data.message, user_no, '1', userNick], function (error, results, fields) {
+                            db.query(sql.chat_text, [roomNo, data.message, user_no, 0, userNick], function (error, results, fields) {
                                 if (error) {
                                     console.log('메시지 저장 오류:', error);
                                     return;
@@ -121,7 +133,7 @@ io.on("connection", (socket) => {
                             console.log("Saving image to DB:", imageUrls);
 
                             // JSON 문자열로 변환된 값을 데이터베이스에 저장
-                            db.query(sql.chat_img, [roomNo, user_no, '1', imageUrls, userNick], function (error) {
+                            db.query(sql.chat_img, [roomNo, "", user_no, 0, imageUrls, userNick], function (error) {
                                 if (error) {
                                     console.log('이미지 저장 오류:', error);
                                 } else {
@@ -133,6 +145,32 @@ io.on("connection", (socket) => {
 
                         // 7. 메시지를 다른 사용자에게 전송
                         socket.to(data.chat_no).emit("receive_message", data);
+
+                        // unread 상태 업데이트 전송
+                        db.query(sql.get_unread, [data.chat_no, data.user_no], (error, results) => {
+                            if (error) {
+                                console.error("Unread message count error:", error);
+                                return;
+                            }
+
+                            const unreadCount = results[0].unread_count;
+                            io.to(data.chat_no).emit("update_unread", { chat_no: data.chat_no, unread_count: unreadCount });
+
+                            // unread_count 상태 업데이트 전송 (새로 고침 없어도 업데이트됨)
+                            db.query(
+                                "SELECT COUNT(*) AS unread_total FROM tb_chat_msg WHERE Chat_read = 0 AND Chat_sender != ?",
+                                [data.user_no],
+                                (error, totalResults) => {
+                                    if (error) {
+                                        console.error("Unread total 조회 오류:", error);
+                                        return;
+                                    }
+
+                                    const unreadTotal = totalResults[0].unread_total;
+                                    io.emit("update_unread_total", { unread_total: unreadTotal });
+                                }
+                            );
+                        })
                     });
                 });
             });
