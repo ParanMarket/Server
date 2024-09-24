@@ -155,7 +155,7 @@ router.get('/get_chat_history/:chatNo', (req, res) => {
     const user_no = decoded.no; // 사용자 번호
 
     // chat_msg_status로 가져오는 정보 다르게 설정하기
-    db.query('SELECT user_no_1 FROM tb_chat WHERE chat_no = ?', [chatNo], (err, userNo1) => {
+    db.query('SELECT user_no_1 FROM TB_CHAT WHERE chat_no = ?', [chatNo], (err, userNo1) => {
         if (err) {
             return res.status(500).json({ error: '채팅방 정보 조회 오류'})
         }
@@ -165,10 +165,10 @@ router.get('/get_chat_history/:chatNo', (req, res) => {
 
         if (user_no === user_no_1) {
             // user_no가 user_no_1과 같을 경우 : chat_msg_status가 1과 -1이 아닌 메시지 가져오기 (작성자 본인)
-            query = 'SELECT chat_no, chat_content as message, chat_sender as author, chat_read, chat_img as images, chat_time as time FROM tb_chat_msg WHERE chat_no = ? AND chat_msg_status != 1 AND chat_msg_status != -1'
+            query = 'SELECT chat_no, chat_content as message, chat_sender as author, chat_read, chat_img as images, chat_time as time FROM TB_CHAT_MSG WHERE chat_no = ? AND chat_msg_status != 1 AND chat_msg_status != -1'
         } else {
             // user_no가 user_no_1과 다를 경우: chat_msg_status가 2와 -1가 아닌 메시지 가져오기 (채팅 건 사람)
-            query = 'SELECT chat_no, chat_content as message, chat_sender as author, chat_read, chat_img as images, chat_time as time FROM tb_chat_msg WHERE chat_no = ? AND chat_msg_status != 2 AND chat_msg_status != -1'
+            query = 'SELECT chat_no, chat_content as message, chat_sender as author, chat_read, chat_img as images, chat_time as time FROM TB_CHAT_MSG WHERE chat_no = ? AND chat_msg_status != 2 AND chat_msg_status != -1'
         }
 
         // 필터링된 메시지 가져오기

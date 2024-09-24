@@ -36,9 +36,9 @@ router.post('/login', async function(request, response) {
         const payload_email = payload.email;
         console.log("페이로드 이메일 ",payload_email)
 
-        db.query(sql.email_check, [payload.email], function (error, results, fields) {
+        db.query(sql.email_check, [payload_email], function (error, results, fields) {
             if (error) {
-                console.log("이메일 체크 시db 오류")
+                console.log("이메일 체크 시db 오류", error)
                 return response.status(500).json({ message: 'DB_error' });
             }
             if (results.length > 0) {
@@ -101,7 +101,7 @@ router.post('/login', async function(request, response) {
                         } else {
                             console.log('이메일 등록 성공');
                             const user = results[0];
-                            const token = jwt.sign({ no: user.User_no }, 'secret_key');
+                            const token = jwt.sign({ no: user.user_no }, 'secret_key');
                             response.status(201).send({ userToken: token, needsNickname: true  });
                         }
                     });

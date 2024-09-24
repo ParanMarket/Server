@@ -82,7 +82,7 @@ io.on("connection", (socket) => {
             console.log("채팅방 데이터", data)
 
             // 1. 현재 채팅방 상태 확인
-            db.query("SELECT chat_status FROM tb_chat WHERE chat_no = ?", [data.chat_no], (error, results) => {
+            db.query("SELECT chat_status FROM TB_CHAT WHERE chat_no = ?", [data.chat_no], (error, results) => {
                 if (error) {
                     console.log('채팅방 상태 조회 오류:', error);
                     return;
@@ -93,7 +93,7 @@ io.on("connection", (socket) => {
 
                 // 2. 만약 chat_status가 1 또는 2라면 다시 0으로 업데이트 (재활성화)
                 if (currentChatStatus !== 0) {
-                    db.query("UPDATE tb_chat SET chat_status = 0 WHERE chat_no = ?", [data.chat_no], (updateError) => {
+                    db.query("UPDATE TB_CHAT SET chat_status = 0 WHERE chat_no = ?", [data.chat_no], (updateError) => {
                         if (updateError) {
                             console.log('채팅방 상태 업데이트 오류:', updateError);
                             return;
@@ -162,7 +162,7 @@ io.on("connection", (socket) => {
 
                             // unread_count 상태 업데이트 전송 (새로 고침 없어도 업데이트됨)
                             db.query(
-                                "SELECT COUNT(*) AS unread_total FROM tb_chat_msg WHERE Chat_read = 0 AND Chat_sender != ?",
+                                "SELECT COUNT(*) AS unread_total FROM TB_CHAT_MSG WHERE Chat_read = 0 AND Chat_sender != ?",
                                 [data.user_no],
                                 (error, totalResults) => {
                                     if (error) {
@@ -240,7 +240,7 @@ io.on("connection", (socket) => {
             });
 
             // chat_no를 이용해 tb_chat 테이블에서 chat_status를 불러옴
-            db.query('SELECT chat_status FROM tb_chat WHERE chat_no = ?', [data.chatNo], (error, results) => {
+            db.query('SELECT chat_status FROM TB_CHAT WHERE chat_no = ?', [data.chatNo], (error, results) => {
                 if (error) {
                     console.log('채팅 상태 조회 오류:', error);
                     return;
@@ -259,7 +259,7 @@ io.on("connection", (socket) => {
 
                     // 시스템 메시지 저장
                     const query = `
-                INSERT INTO tb_chat_msg (Chat_no, Chat_content, Chat_sender, Chat_read, Chat_sender_nick, chat_msg_status)
+                INSERT INTO TB_CHAT_MSG (Chat_no, Chat_content, Chat_sender, Chat_read, Chat_sender_nick, chat_msg_status)
                 VALUES(?, ?, ?, ?, ?, ?)`;
 
                     db.query(query, [

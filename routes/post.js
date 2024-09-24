@@ -167,7 +167,7 @@ router.post('/post_update', uploadImage.array('files', 10), async (request, resp
       });
 
       // 삭제된 img의 url을 가진 행 삭제
-      const deleteImgUrl = `DELETE FROM tb_post_img WHERE post_img = ?`
+      const deleteImgUrl = `DELETE FROM TB_POST_IMG WHERE post_img = ?`
 
       deleteImages.forEach((imageUrl) => {
         // DB에서 이미지 삭제
@@ -211,7 +211,7 @@ router.post('/post_update', uploadImage.array('files', 10), async (request, resp
     }
 
     // 4. 대표 이미지가 없을 경우 가장 이전에 올라온 이미지를 대표 이미지로 설정
-    const checkMainImage = `SELECT post_img_main FROM tb_post_img WHERE post_no = ? AND post_img_main = 1`;
+    const checkMainImage = `SELECT post_img_main FROM TB_POST_IMG WHERE post_no = ? AND post_img_main = 1`;
 
     db.query(checkMainImage, [data.post_no], function (error, results) {
       if (error) {
@@ -221,8 +221,8 @@ router.post('/post_update', uploadImage.array('files', 10), async (request, resp
 
       const hasMainImage = results.length > 0; // 대표 이미지 여부 확인
 
-      const setMainImage = `UPDATE tb_post_img SET Post_img_main = 1 
-WHERE post_img_no = (SELECT min_no FROM (SELECT min(Post_img_no) min_no FROM tb_post_img WHERE post_no = ?) tmp);`
+      const setMainImage = `UPDATE TB_POST_IMG SET Post_img_main = 1 
+WHERE post_img_no = (SELECT min_no FROM (SELECT min(Post_img_no) min_no FROM TB_POST_IMG WHERE post_no = ?) tmp);`
 
       if (!hasMainImage) {
         // 대표 이미지가 없을 경우
@@ -495,10 +495,10 @@ router.post('/search_post', function (request, response, next) {
   let sqlQuery = `
     SELECT
       post_user_no, post_title, post_price, post_type, post_status, ps.post_no, post_sdd, post_img,
-      (SELECT count(*) FROM tb_post_like lk WHERE ps.post_no = lk.post_no) AS post_like_cnt,
-      (SELECT count(*) FROM tb_chat ct WHERE ps.post_no = ct.post_no) AS post_chat_cnt
+      (SELECT count(*) FROM TB_POST_LIKE lk WHERE ps.post_no = lk.post_no) AS post_like_cnt,
+      (SELECT count(*) FROM TB_CHAT ct WHERE ps.post_no = ct.post_no) AS post_chat_cnt
     FROM
-      tb_post ps, tb_post_img img
+      TB_POST ps, TB_POST_IMG img
     WHERE
       ps.post_title LIKE ?
       AND ps.post_no = img.post_no

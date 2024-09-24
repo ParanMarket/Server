@@ -142,7 +142,7 @@ router.post('/user_list', function (request, response, next) {
         // 한 단어라도 들어가면 검색 되도록
         // 키워드를 공백을 기준으로 분리하여 배열로 만듦
         const keywords = data.keyword.trim().split(/\s+/);
-        let query = `SELECT * FROM tb_user WHERE `;
+        let query = `SELECT * FROM TB_USER WHERE `;
         let queryParams = [];
 
         // 각 키워드에 대해 LIKE 조건 추가

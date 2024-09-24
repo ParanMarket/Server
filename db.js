@@ -10,6 +10,12 @@ const db = mysql.createConnection({
   password: process.env.DB_PSWORD,
   database: process.env.DB_DATABASE,
 });
-db.connect();
+db.connect((err) => {
+  if (err) {
+    console.error("MySQL 연결 오류: ", err);
+  } else {
+    console.log("MySQL에 성공적으로 연결되었습니다.");
+  }
+});
 
 module.exports = db;
