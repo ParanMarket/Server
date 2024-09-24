@@ -4,7 +4,7 @@ module.exports = {
 email_check: `SELECT * FROM TB_USER WHERE user_email = ?`,
     nick_check: `SELECT * FROM TB_USER WHERE user_nick = ?`,
     register_email: `INSERT INTO TB_USER (user_email) VALUES (?)`,
-    register_nick: `UPDATE TB_USER SET user_nick = ? WHERE user_no = ?`,
+    register_nick: `UPDATE TB_USER SET user_nick = ? WHERE User_no = ?`,
     user_info_get: `SELECT user_nick, user_email, user_sdd, user_img, user_grade, user_tp FROM TB_USER WHERE user_no = ?`,
 
 
@@ -40,7 +40,7 @@ email_check: `SELECT * FROM TB_USER WHERE user_email = ?`,
     post_list_get: `SELECT ps.post_no, post_status, post_user_no, post_title, post_price, post_type, post_sdd, post_status, post_img,
                            (SELECT count(*) FROM TB_POST_LIKE lk
                             WHERE ps.post_no = lk.post_no GROUP BY ps.post_no) AS post_like_cnt,
-                           (SELECT count(*) FROM TB _CHAT ct
+                           (SELECT count(*) FROM TB_CHAT ct
                             WHERE ps.post_no = ct.post_no GROUP BY ps.post_no) AS post_chat_cnt
                     FROM TB_POST ps, TB_POST_IMG img
                     WHERE ps.post_no = img.post_no  AND img.post_img_main = 1
@@ -64,9 +64,9 @@ email_check: `SELECT * FROM TB_USER WHERE user_email = ?`,
                             GROUP BY ps.post_no) AS post_like_cnt,
                            (SELECT IFNULL(count(*), 0) FROM TB_POST_LIKE lk
                             WHERE ps.post_no = lk.post_no
-                              AND lk.user_no = us.user_no) AS post_my_like
+                              AND lk.user_no = ?) AS post_my_like
                     FROM TB_POST ps, TB_USER us, TB_POST_IMG img
-                    WHERE post_user_no = user_no AND img.post_no = ps.post_no
+                    WHERE post_user_no = us.user_no AND img.post_no = ps.post_no
                       AND img.post_img_main = 1 AND ps.post_no = ?`,
     post_img_get: `SELECT post_img FROM TB_POST_IMG WHERE post_no = ?`,
 

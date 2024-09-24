@@ -101,7 +101,7 @@ router.post('/login', async function(request, response) {
                         } else {
                             console.log('이메일 등록 성공');
                             const user = results[0];
-                            const token = jwt.sign({ no: user.user_no }, 'secret_key');
+                            const token = jwt.sign({ no: user.User_no }, 'secret_key');
                             response.status(201).send({ userToken: token, needsNickname: true  });
                         }
                     });
@@ -130,40 +130,38 @@ async function verifyToken(accessToken) {
 // 닉네임 설정 및 중복 확인
 router.post('/nick_check', function(request, response) {
     const nick = request.body.nickname;
-    const authHeader = request.headers.authorization;
-
-    // 토큰 번호 없는 경우 오류
-    if (!authHeader) {
-        console.log("토큰번호 없음")
-        return response.status(401).json({ message: 'Authorization header missing' });
+    const token = request.headers.authorization.split(' ')[1];
+    if (!token) {
+        return response.status(401).json({ message: 'No token provided' });
     }
+    console.log(token)
 
-    const token = authHeader.split(' ')[1];
-    let decoded;
-
+    let user_no;
     try {
-        decoded = jwt.verify(token, 'secret_key');
-    } catch (error) {
-        console.log("허용하지 않는 토큰")
-        return response.status(401).json({ message: 'Invalid token' });
+        const decoded = jwt.verify(token, 'secret_key');
+        user_no = decoded.no;
+    } catch (err) {
+        console.log("토큰이상")
+        return response.status(401).json({ message: 'Invalid user token' });
     }
-    console.log(decoded)
 
     db.query(sql.nick_check, [nick], function (error, results, fields) {
         if (error) {
             console.log("db 오류")
             return response.status(500).json({ message: 'DB_error' });
         }
+
         if (results.length > 0) {
-            return response.status(200).json({ message: 'already_exist_nick' });
+            console.log("이미 존재하는 닉네임");
+            return response.status(409).json({ message: 'already_exist_nick' });
         } else {
-            db.query(sql.register_nick, [nick, decoded.no], function (error, results, fields) {
+            db.query(sql.register_nick, [nick,  user_no], function (error, results, fields) {
                 if (error) {
-                    console.log("db 오류")
+                    console.log("DB 오류 발생: ", error);
                     return response.status(500).json({ message: 'DB_error' });
                 }
                 console.log('닉네임 등록 성공');
-                response.status(200).json({ message: 'success', nickname: nick });
+                response.status(201).json({ message: 'success', nickname: nick });
             });
         }
     });

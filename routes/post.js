@@ -384,7 +384,16 @@ router.get('/get_post/:post_no', function (request, response, next) {
   const post_no = request.params.post_no;
   console.log(post_no)
 
-  db.query(sql.post_info_get, [post_no], function (error, results, fields) {
+  const authHeader = request.headers.authorization;
+  if (!authHeader) {
+    console.log("인증코드 없음")
+    return response.status(401).json({message: '인증코드가 없습니다.'})
+  }
+  let user_no = decode_user_no(authHeader);
+
+  console.log("포스트 가져오기", user_no)
+
+  db.query(sql.post_info_get, [user_no, post_no], function (error, results, fields) {
     if (error) {
       console.error(error);
       return response.status(500).json({ error: 'error' });
