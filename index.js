@@ -252,8 +252,8 @@ io.on("connection", (socket) => {
                     const systemMessage = {
                         chat_no: data.chatNo,
                         message: "상대방이 채팅방을 나갔어요.",
-                        user_no: 0, // 시스템 메시지 표시
-                        userNick: 'system',
+                        user_no: 1, // 시스템 메시지 표시
+                        userNick: '관리자',
                         chat_msg_status: chatStatus // chat_status를 chat_msg_status로 저장
                     };
 
