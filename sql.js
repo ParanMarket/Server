@@ -72,7 +72,8 @@ email_check: `SELECT * FROM tb_user WHERE user_email = ?`,
 
     // 6/13
     post_update_status: `UPDATE tb_post SET post_status = 1 WHERE post_no = ?`,
-    post_update_finich: `UPDATE tb_post SET post_status = 2, post_user_no2 = ?, post_edd = now() WHERE post_no = ?`,
+    post_update_user2: `SELECT User_no_2 FROM tb_chat WHERE Post_no = ? AND Chat_no = ? AND User_no_1 = ?`,
+    post_update_finish: `UPDATE tb_post SET Post_status = 2, Post_user_no2 = ?, Post_edd = now() WHERE Post_no = ? AND Post_user_no = ?`,
 
     like_post: `INSERT INTO tb_post_like (post_no, user_no) VALUES (?, ?)`,
     dislike_post: `DELETE FROM tb_post_like WHERE post_no = ? AND user_no = ?`,
@@ -203,13 +204,14 @@ WHERE
         GROUP BY ps.post_no) AS post_chat_cnt FROM tb_post ps, tb_post_img img
         WHERE ps.post_no = img.post_no AND img.post_img_main = 1
         AND ps.post_user_no = ?`,
-    get_user_join_post: `SELECT ps.post_no, post_status, post_user_no, post_title, post_price, post_type, post_sdd, post_status, post_img,
-      (SELECT count(*) FROM tb_post_like lk  WHERE ps.post_no = lk.post_no
-        GROUP BY ps.post_no) AS post_like_cnt,
-        (SELECT count(*) FROM tb_chat ct WHERE ps.post_no = ct.post_no
-        GROUP BY ps.post_no) AS post_chat_cnt FROM tb_post ps, tb_post_img img
-        WHERE ps.post_no = img.post_no AND img.post_img_main = 1
-        AND ps.post_user_no2 = ?`,
+
+    get_user_join_post: `SELECT ps.post_no, ps.post_status, ps.post_user_no, ps.post_title, ps.post_price, ps.post_type, ps.post_sdd, ps.post_status, img.post_img,
+                        (SELECT COUNT(*) FROM tb_post_like lk WHERE ps.post_no = lk.post_no) AS post_like_cnt,
+                        (SELECT COUNT(*) FROM tb_chat ct WHERE ps.post_no = ct.post_no) AS post_chat_cnt FROM tb_post ps
+                        JOIN tb_post_img img ON ps.post_no = img.post_no AND img.post_img_main = 1
+                        JOIN tb_chat ct ON ps.post_no = ct.post_no
+                        WHERE ct.user_no_2 = ?`,
+
 
 
     // manager 관리자 권한

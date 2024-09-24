@@ -260,31 +260,43 @@ router.post('/post_update_status_no', function (request, response, next) {
 
 // 거래 종료 시 상태 변경 + 거래자 입력 6/13 ***
 router.post('/post_update_finish', function (request, response, next) {
-  console.log("거래종료시 상탭 변경", request.body)
   const data = request.body;
   const authHeader = request.headers.authorization;
   if (!authHeader) {
     return response.status(401).json({message: '인증코드가 없습니다.'})
   }
   let user_no = decode_user_no(authHeader);
-  console.log("버튼", user_no)
-  console.log(data.post_no)
+
 
   if (user_no == -1){
     return response.status(401).json({message: '토큰 이상'})
   }
 
-  // 거래자 번호 받아서 insert 하고 거래 상태 2로 변경, 거래 완료일 설정
-  db.query(sql.post_update_finich, [user_no, data.post_no], function (error, results, fields) {
-    if (error) {
-      console.log(error);
-      return response.status(500).json({ error: 'error' });
-    }
-    return response.status(200).json({
-      message: 'success'
-    });
-  })
-})
+  // user_no_2 가져오기
+   db.query(sql.post_update_user2, [data.post_no, data.chat_no, user_no], function (error, results, fields) {
+     if (error) {
+       console.error('Error fetching user_no_2:', error);
+       return response.status(500).json({ error: 'error' });
+     }
+
+     const user_no_2 = results[0]?.User_no_2;
+
+     if (user_no_2 === null || user_no_2 === undefined) {
+       return response.status(404).json({ message: 'user_no_2 not found for the given chat_no and post_no' });
+     }
+
+     // 거래자 번호 받아서 insert 하고 거래 상태 2로 변경, 거래 완료일 설정
+     db.query(sql.post_update_finish, [user_no_2 , data.post_no, user_no], function (error, results, fields) {
+       if (error) {
+         console.log(error);
+         return response.status(500).json({ error: 'error' });
+       }
+       return response.status(200).json({
+         message: 'success'
+       });
+     });
+   });
+});
 
 
 

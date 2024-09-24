@@ -165,6 +165,7 @@ router.post('/get_user_post', function (request, response) {
             })
         }
         response.json(results);
+        console.log("나의 거래 이력 조회 : ", results)
     });
 })
 
