@@ -36,6 +36,13 @@ router.post('/login', async function(request, response) {
         const payload_email = payload.email;
         console.log("페이로드 이메일 ",payload_email)
 
+        const allowedDomain = '@sookmyung.ac.kr';
+
+        // 이메일 도메인 검증
+        if (!payload_email.endsWith(allowedDomain) && payload_email !== process.env.SYSTEM_EMAIL) {
+            return response.status(403).json({ message: '숙명여자대학교 이메일로만 접근 가능합니다.' });
+        }
+
         db.query(sql.email_check, [payload_email], function (error, results, fields) {
             if (error) {
                 console.log("이메일 체크 시db 오류", error)
