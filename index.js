@@ -43,7 +43,7 @@ const server = http.createServer(app)
 
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: ['http://localhost:3000', 'https://paran-market.vercel.app', 'https://www.paranmarket.shop'],
         methods: ["GET", "POST"],
         credentials: true  // 쿠키나 인증 정보를 함께 전송할 경우
     },
