@@ -27,6 +27,7 @@ function decode_user_no(authHeader) {
 }
 
 router.post('/login', async function(request, response) {
+    console.log("로그인 검증 시작")
     const accessToken = request.body.token;
 
     try {
@@ -35,6 +36,7 @@ router.post('/login', async function(request, response) {
 
         db.query(sql.email_check, [payload.email], function (error, results, fields) {
             if (error) {
+                console.log("db 오류")
                 return response.status(500).json({ message: 'DB_error' });
             }
             if (results.length > 0) {
@@ -51,6 +53,7 @@ router.post('/login', async function(request, response) {
 
                 db.query(sql.check_black, [user.User_no], function (error, blackResults) {
                     if (error) {
+                        console.log("db 오류")
                         return response.status(500).json({ message: 'DB_error' });
                     }
 
@@ -91,6 +94,7 @@ router.post('/login', async function(request, response) {
                 db.query(sql.register_email, [payload.email], function (error, results, fields) {
                     db.query(sql.email_check, [payload.email], function (error, results, fields) {
                         if (error) {
+                            console.log("db 오류")
                             return response.status(500).json({ message: 'DB_error' });
                         } else {
                             console.log('이메일 등록 성공');
@@ -128,6 +132,7 @@ router.post('/nick_check', function(request, response) {
 
     // 토큰 번호 없는 경우 오류
     if (!authHeader) {
+        console.log("토큰번호 없음")
         return response.status(401).json({ message: 'Authorization header missing' });
     }
 
@@ -137,12 +142,14 @@ router.post('/nick_check', function(request, response) {
     try {
         decoded = jwt.verify(token, 'secret_key');
     } catch (error) {
+        console.log("허용하지 않는 토큰")
         return response.status(401).json({ message: 'Invalid token' });
     }
     console.log(decoded)
 
     db.query(sql.nick_check, [nick], function (error, results, fields) {
         if (error) {
+            console.log("db 오류")
             return response.status(500).json({ message: 'DB_error' });
         }
         if (results.length > 0) {
@@ -150,6 +157,7 @@ router.post('/nick_check', function(request, response) {
         } else {
             db.query(sql.register_nick, [nick, decoded.no], function (error, results, fields) {
                 if (error) {
+                    console.log("db 오류")
                     return response.status(500).json({ message: 'DB_error' });
                 }
                 console.log('닉네임 등록 성공');
