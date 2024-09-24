@@ -289,4 +289,4 @@ io.on("connection", (socket) => {
 
 })
 
-server.listen(PORT, () => console.log(`서버가 ${PORT} 에서 시작되었어요`))
+server.listen(PORT, '0.0.0.0', () => console.log(`서버가 ${PORT} 에서 시작되었어요`))
