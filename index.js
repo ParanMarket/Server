@@ -33,6 +33,10 @@ app.use('/post', postRouter);
 app.use('/mypage', mypageRouter);
 app.use('/chat', chatRouter)
 app.use('/manager', managerRouter);
+
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
 //---------------------------------------------------------------------------------------
 
 const server = http.createServer(app)
