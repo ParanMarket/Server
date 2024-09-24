@@ -382,7 +382,6 @@ router.get('/post_cate_list/:cate', function (request, response, next) {
 // 게시글 상세 불러오기 6/12 (찜 개수, 유저 프로필 가져오기 추가)
 router.get('/get_post/:post_no', function (request, response, next) {
   const post_no = request.params.post_no;
-  console.log(post_no)
 
   const authHeader = request.headers.authorization;
   if (!authHeader) {
@@ -390,8 +389,6 @@ router.get('/get_post/:post_no', function (request, response, next) {
     return response.status(401).json({message: '인증코드가 없습니다.'})
   }
   let user_no = decode_user_no(authHeader);
-
-  console.log("포스트 가져오기", user_no)
 
   db.query(sql.post_info_get, [user_no, post_no], function (error, results, fields) {
     if (error) {

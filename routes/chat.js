@@ -62,7 +62,7 @@ router.post('/get_chat_details', async function (request, response, next) {
     } catch (err) {
         console.log('Invalid user token')
     }
-
+    console.log("채팅방 연결", request.body)
 
     // 채팅방 번호 생성
     let chat_no;
@@ -70,6 +70,8 @@ router.post('/get_chat_details', async function (request, response, next) {
 
         if (request.body.post_user_no != user_no) {
             chat_no = request.body.post_no * 100000 + request.body.post_user_no * 1000 + user_no;
+
+            console.log("여기 챗노", chat_no)
 
             // 채팅방 있는지 확인
             const [chatResults] = await db.promise().query(sql.chat_check, [chat_no]);
