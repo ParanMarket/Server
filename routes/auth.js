@@ -38,7 +38,7 @@ router.post('/login', async function(request, response) {
 
         db.query(sql.email_check, [payload.email], function (error, results, fields) {
             if (error) {
-                console.log("db 오류")
+                console.log("이메일 체크 시db 오류")
                 return response.status(500).json({ message: 'DB_error' });
             }
             if (results.length > 0) {
@@ -55,7 +55,7 @@ router.post('/login', async function(request, response) {
 
                 db.query(sql.check_black, [user.User_no], function (error, blackResults) {
                     if (error) {
-                        console.log("db 오류")
+                        console.log("블랙 유저 확인 시 db 오류")
                         return response.status(500).json({ message: 'DB_error' });
                     }
 
@@ -96,7 +96,7 @@ router.post('/login', async function(request, response) {
                 db.query(sql.register_email, [payload.email], function (error, results, fields) {
                     db.query(sql.email_check, [payload.email], function (error, results, fields) {
                         if (error) {
-                            console.log("db 오류")
+                            console.log("회원 등록 중 db 오류")
                             return response.status(500).json({ message: 'DB_error' });
                         } else {
                             console.log('이메일 등록 성공');
