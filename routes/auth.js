@@ -32,7 +32,9 @@ router.post('/login', async function(request, response) {
 
     try {
         const payload = await verifyToken(accessToken);
+        console.log("페이로드", payload)
         const payload_email = payload.email;
+        console.log("페이로드 이메일 ",payload_email)
 
         db.query(sql.email_check, [payload.email], function (error, results, fields) {
             if (error) {
