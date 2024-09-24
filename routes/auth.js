@@ -46,7 +46,7 @@ router.post('/login', async function(request, response) {
                 const user = results[0];
                 console.log(user)
 
-                if (user.user_status === 1) {
+                if (user.User_status === 1) {
                     return response.status(403).json({
                         message: "자발적으로 탈퇴한 회원입니다."
                     })
