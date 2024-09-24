@@ -13,7 +13,7 @@ const PORT = process.env.SERVER_PORT || 5001
 
 const app = express()
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://paran-market.vercel.app', 'https://www.paranmarket.shop'],
     credentials: true,
 }))
 
