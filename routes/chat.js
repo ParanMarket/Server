@@ -198,7 +198,7 @@ router.post('/updateChatRead', (req, res) => {
 
     db.query(sql.update_read, [chatNo, user_no], (err, results) => {
             if (err) {
-                console.error('chat_read 상태 error :', error);
+                console.error('chat_read 상태 error :', err);
                 return res.status(500).send('error');
             }
         res.status(200).json({ message: 'success' });
